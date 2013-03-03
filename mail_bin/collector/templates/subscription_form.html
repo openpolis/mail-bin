@@ -1,0 +1,40 @@
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery.mailbin.js"></script>
+<div id="subscription_container">
+  <form action="{{ url }}" method="post" id="subscription_form">
+    {{ form.as_p }}
+    {% csrf_token %}
+    <input type="submit" value="Registrati">
+      <div class="text-success"></div>
+      <div class="text-error"></div>
+  </form>
+  <script type="text/javascript">
+      var handleFormSubmit = function(){
+          $('#subscription_form').mailbinForm();
+{#          $('#subscription_form').submit(function() { // catch the form's submit event#}
+{#              $.ajax({ // create an AJAX call...#}
+{#                  data: $(this).serialize(), // get the form data#}
+{#                  type: $(this).attr('method'), // GET or POST#}
+{#                  dataType: 'jsonp', crossDomain: true,#}
+{#                  url: $(this).attr('action') // the file to call#}
+{#              }).done(function(data){#}
+{#                  if( console && console.log ) {#}
+{#                      console.log("Sample of data:", data);#}
+{#                  }#}
+{#                  $('#subscription_results').html(data); // update the DIV#}
+{#              });#}
+{#              return false;#}
+{#          });#}
+      };
+      $(document).ready(function(){
+          $('#subscription_form').mailbinForm();
+      });
+{#      if (typeof jQuery === 'undefined') {#}
+{#          var e = document.createElement('script');#}
+{#          e.src = '//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js';#}
+{#          e.type='text/javascript';#}
+{#          e.onload = handleFormSubmit;#}
+{#          document.getElementsByTagName("head")[0].appendChild(e);#}
+{#      } else { handleFormSubmit(); }#}
+  </script>
+</div>

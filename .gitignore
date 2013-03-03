@@ -1,0 +1,4 @@
+.idea
+*.py[c]
+*.db
+settings_local.py
