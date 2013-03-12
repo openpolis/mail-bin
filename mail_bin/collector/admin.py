@@ -7,6 +7,7 @@ class WebServiceAdmin(admin.ModelAdmin):
 
 
 class SubscriptionInline(admin.StackedInline):
+    readonly_fields = ("created_at",)
     model = Subscription
     extra = 0
 
