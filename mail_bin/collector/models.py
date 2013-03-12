@@ -15,9 +15,24 @@ EMAIL_VALIDATION_LEVELS = [
 ]
 
 
+def update_name(obj, first_name, last_name):
+    edited = False
+    if not obj.first_name and first_name:
+        obj.first_name = first_name
+        edited = True
+    if not obj.last_name and last_name:
+        obj.last_name = last_name
+        edited = True
+    if edited:
+        obj.save()
+    return edited
+
+
 class EmailAddress(models.Model):
 
     email = models.EmailField(unique=True)
+    first_name = models.CharField(max_length=200, blank=True)
+    last_name = models.CharField(max_length=200, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     #validation_level = models.SmallIntegerField(default=0, blank=True, choices=EMAIL_VALIDATION_LEVELS)
 
@@ -48,33 +63,42 @@ class WebService(models.Model):
     uri = models.URLField(unique=True)
     #min_validation_level = models.SmallIntegerField(blank=True, default=0, choices=EMAIL_VALIDATION_LEVELS)
 
-    def subscribe(self, email, ip='', user_agent='', last_name='', first_name='', created_at=None):
+    def subscribe(self, email, ip_address='', user_agent='', last_name='', first_name=''):
 
         # create email address
         email_address, email_created = EmailAddress.objects.get_or_create(
             email=email,
+            defaults=dict(
+                first_name=last_name,
+                last_name=first_name,
+            )
         )
         if email_created:
             logger.debug(u"New email: {0}".format(email_address))
         else:
-            logger.debug(u"Email already registered: {0}".format(email_address))
+            if update_name(email_address, first_name, last_name):
+                logger.debug(u"Email updated: {0}".format(email_address))
+            else:
+                logger.debug(u"Email already registered: {0}".format(email_address))
 
         # create subscription
         subscription, subscription_created = Subscription.objects.get_or_create(
             email_address=email_address,
             web_service=self,
             defaults=dict(
-                ip_address=ip,
+                ip_address=ip_address,
                 user_agent=user_agent,
                 first_name=last_name,
                 last_name=first_name,
-                created_at=created_at
             )
         )
         if subscription_created:
             logger.debug(u"New subscription: {0}".format(subscription))
         else:
-            logger.debug(u"Subscription already created: {0}".format(subscription))
+            if update_name(subscription, first_name, last_name):
+                logger.debug(u"Subscription already created: {0}".format(subscription))
+            else:
+                logger.debug(u"Subscription updated: {0}".format(subscription))
 
         return subscription_created
 

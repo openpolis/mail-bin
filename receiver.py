@@ -24,7 +24,7 @@ def store_req_handler(url, models):
         if receiver in socks and socks[receiver] == zmq.POLLIN:
             message = json.loads(receiver.recv())
 
-            logger.debug(u"New save request: {0}".format(message))
+            logger.debug(u"Save request: {0}".format(message))
 
             service_uri = message.pop('service_uri', None)
             if not service_uri:
@@ -51,8 +51,6 @@ if __name__ == "__main__":
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mail_bin.settings")
     from django.conf import settings
     from mail_bin.collector import models
-
-    print list(models.WebService.objects.all())
 
     try:
         store_req_handler(settings.QUEUE_URL, models)
