@@ -96,9 +96,9 @@ class WebService(models.Model):
             logger.debug(u"New subscription: {0}".format(subscription))
         else:
             if update_name(subscription, first_name, last_name):
-                logger.debug(u"Subscription already created: {0}".format(subscription))
-            else:
                 logger.debug(u"Subscription updated: {0}".format(subscription))
+            else:
+                logger.debug(u"Subscription already created: {0}".format(subscription))
 
         return subscription_created
 
