@@ -18,10 +18,14 @@ Initialize virtualenv::
 
 Initialize django::
 
-    cp mail-bin/mail_bin/settings_local.example mail-bin/mail_bin/settings_local.py
-    vi mail-bin/mail_bin/settings_local.py
-    ... set DATABASES, SECRET_KEY, LOGGING ...
+    put export MB_SECRET_KEY= ... in virtualenvs - postactivate
+
     python manage.py syncdb
-    ...
     python manage.py runserver
 
+
+Run receiver process::
+
+    python receiver.py
+
+    (use supervisord in production)
