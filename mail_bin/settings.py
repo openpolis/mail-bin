@@ -6,17 +6,21 @@ from os.path import join, abspath, dirname
 here = lambda *x: join(abspath(dirname(__file__)), *x)
 PROJECT_ROOT = here("..")
 root = lambda *x: join(abspath(PROJECT_ROOT), *x)
+public = lambda *x: join(root('public'), *x)
 
-def get_env_variable(var_name):
+def get_env_variable(var_name, *defaults):
   """ Get the environment variable or return exception """
   try:
       return os.environ[var_name]
   except KeyError:
-      error_msg = "Set the %s environment variable" % var_name
-      raise ImproperlyConfigured(error_msg)
+      if not defaults:
+          error_msg = "Set the %s environment variable" % var_name
+          raise ImproperlyConfigured(error_msg)
+      else:
+          return defaults[0]
 
 
-DEBUG = get_env_variable('MB_DEBUG').lower() in ('on', '1', 'true', 'yes')
+DEBUG = get_env_variable('MB_DEBUG', 'yes').lower() in ('on', '1', 'true', 'yes')
 TEMPLATE_DEBUG = DEBUG
 QUEUE_URL = "tcp://*:5558"
 
@@ -79,7 +83,7 @@ MEDIA_URL = ''
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/var/www/example.com/static/"
-STATIC_ROOT = root('static')
+STATIC_ROOT = public('static')
 
 # URL prefix for static files.
 # Example: "http://example.com/static/", "http://static.example.com/"
@@ -100,7 +104,7 @@ STATICFILES_FINDERS = (
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = get_env_variable('MB_SECRET_KEY')
+SECRET_KEY = get_env_variable('MB_SECRET_KEY', 'abcdefghi')
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (

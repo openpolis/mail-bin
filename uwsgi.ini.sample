@@ -1,0 +1,25 @@
+# configuration file for uwsgi
+#
+# link this as op_mailbin.ini into the /etc/uwsgi/vassals dir
+#
+[uwsgi]
+vacuum = true
+master = true
+workers = 1
+daemonize = /var/log/uwsgi/op_mailbin.log
+harakiri = 60
+harakiri-verbose = true
+
+# set the http port
+socket = 127.0.0.1:8030
+
+# change to django project directory
+chdir = /home/mail-bin
+home = /home/python_envs/mail-bin
+
+# load web.py wsgi application
+env = MB_SECRET_KEY=[SECRET_KEY HERE]
+env = MB_DEBUG=[yes or no]
+pythonpath = /home/mail-bin
+module = mail_bin.wsgi
+
