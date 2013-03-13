@@ -16,8 +16,7 @@ def get_env_variable(var_name):
       raise ImproperlyConfigured(error_msg)
 
 
-
-DEBUG = True
+DEBUG = get_env_variable('MB_DEBUG').lower() in ('on', '1', 'true', 'yes')
 TEMPLATE_DEBUG = DEBUG
 QUEUE_URL = "tcp://*:5558"
 
