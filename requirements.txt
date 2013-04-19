@@ -2,3 +2,4 @@ Django==1.5
 pyzmq==13.0.0
 pydns==2.3.6
 validate-email==1.1
+django_extensions==1.1.1
