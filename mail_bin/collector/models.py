@@ -38,6 +38,10 @@ class EmailAddress(models.Model):
 
     services = models.ManyToManyField('WebService', through='Subscription')
 
+    class Meta:
+        verbose_name = 'Indirizzo email'
+        verbose_name_plural = 'Indirizzi email'
+
     def __unicode__(self):
         return self.email
 
@@ -52,6 +56,10 @@ class Subscription(models.Model):
 
     email_address = models.ForeignKey('EmailAddress')
     web_service = models.ForeignKey('WebService')
+
+    class Meta:
+        verbose_name = 'Iscrizione'
+        verbose_name_plural = 'Iscrizioni'
 
     def __unicode__(self):
         return u"subscription for {0} to {1}".format(self.email_address, self.web_service)
@@ -101,6 +109,10 @@ class WebService(models.Model):
                 logger.debug(u"Subscription already created: {0}".format(subscription))
 
         return subscription_created
+
+    class Meta:
+        verbose_name = 'Servizio'
+        verbose_name_plural = 'Servizi'
 
     def __unicode__(self):
         return self.name
