@@ -137,6 +137,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     # 'django.contrib.admindocs',
     'mail_bin.collector',
+    'mail_bin.utils',
     'django_extensions',
 )
 

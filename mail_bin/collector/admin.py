@@ -1,84 +1,62 @@
 from django.contrib import admin
+from django.http import HttpResponse
 from mail_bin.collector.models import WebService, EmailAddress, Subscription
+from mail_bin.utils import unicode_csv as csv
 
-
-class CSVAdmin(admin.ModelAdmin):
+def export_select_fields_csv_action(description="Export selected objects as CSV file",
+                                    fields=None, exclude=None, header=True):
     """
-    Adds a CSV export action to an admin view.
+    This function returns an export csv action
+
+    'fields' is a list of tuples denoting the field and label to be exported. Labels
+    make up the header row of the exported file if header=True.
+
+        fields=[
+                ('field1', 'label1'),
+                ('field2', 'label2'),
+                ('field3', 'label3'),
+            ]
+
+    'exclude' is a flat list of fields to exclude. If 'exclude' is passed,
+    'fields' will not be used. Either use 'fields' or 'exclude.'
+
+        exclude=['field1', 'field2', field3]
+
+    'header' is whether or not to output the column names as the first row
+
+    Based on: http://djangosnippets.org/snippets/2020/
     """
+    def export_as_csv(modeladmin, request, queryset):
+        """
+        Generic csv export admin action.
+        based on http://djangosnippets.org/snippets/1697/
+        """
+        opts = modeladmin.model._meta
+        field_names = [field.name for field in opts.fields]
+        labels = []
+        if exclude:
+            field_names = [v for v in field_names if v not in exclude]
+        elif fields:
+            field_names = [k for k, v in fields if k in field_names]
+            labels = [v for k, v in fields if k in field_names]
 
-    # This is the maximum number of records that will be written.
-    # Exporting massive numbers of records should be done asynchronously.
-    csv_record_limit = 1000
+        response = HttpResponse(mimetype='text/plain')
 
-    extra_csv_fields = ()
+        # uncomment this if download is required
+        #response = HttpResponse(mimetype='text/csv')
+        #response['Content-Disposition'] = 'attachment; filename=%s.csv' % unicode(opts).replace('.', '_')
 
-    def get_actions(self, request):
-        actions = self.actions if hasattr(self, 'actions') else []
-        actions.append('csv_export')
-        actions = super(CSVAdmin, self).get_actions(request)
-        return actions
-
-    def get_extra_csv_fields(self, request):
-        return self.extra_csv_fields
-
-    def csv_export(self, request, qs=None, *args, **kwargs):
-        import csv
-        from django.http import HttpResponse
-        from django.template.defaultfilters import slugify
-
-        response = HttpResponse(mimetype='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=%s.csv' \
-                                          % slugify(self.model.__name__)
-        headers = list(self.list_display) + list(self.get_extra_csv_fields(request))
-
-        try:
-            headers.remove('__str__')
-        except ValueError, AttributeError:
-            pass
-        try:
-            headers.remove('__unicode__')
-        except ValueError, AttributeError:
-            pass
-
-        if len(headers) is 0:
-            return HttpResponse(status=500, content='no csv data, specify an extra_csv_fields parameter in your admin class')
-
-        writer = csv.DictWriter(response, headers)
-
-        # Write header.
-        header_data = {}
-        for name in headers:
-            if hasattr(self, name) \
-                and hasattr(getattr(self, name), 'short_description'):
-                header_data[name] = getattr(
-                    getattr(self, name), 'short_description')
+        writer = csv.UnicodeWriter(response)
+        if header:
+            if labels:
+                writer.writerow(labels)
             else:
-                field = self.model._meta.get_field_by_name(name)
-                if field and field[0].verbose_name:
-                    header_data[name] = field[0].verbose_name
-                else:
-                    header_data[name] = name
-            header_data[name] = header_data[name].title()
-        writer.writerow(header_data)
-
-        # Write records.
-        for r in qs[:self.csv_record_limit]:
-            data = {}
-            for name in headers:
-                if hasattr(r, name):
-                    data[name] = getattr(r, name)
-                elif hasattr(self, name):
-                    data[name] = getattr(self, name)(r)
-                else:
-                    raise Exception, 'Unknown field: %s' % (name,)
-
-                if callable(data[name]):
-                    data[name] = data[name]()
-            writer.writerow(data)
+                writer.writerow(field_names)
+        for obj in queryset:
+            writer.writerow([unicode(getattr(obj, field)).encode('utf-8') for field in field_names])
         return response
-    csv_export.short_description = \
-        'Exported selected %(verbose_name_plural)s as CSV'
+    export_as_csv.short_description = description
+    return export_as_csv
 
 
 class WebServiceAdmin(admin.ModelAdmin):
@@ -95,10 +73,19 @@ class EmailAdmin(admin.ModelAdmin):
     inlines = [SubscriptionInline, ]
 
 
-class SubscriptionAdmin(CSVAdmin):
-    extra_csv_fields = ('first_name', 'last_name', 'email_address')
+class SubscriptionAdmin(admin.ModelAdmin):
     list_filter = ('web_service__name', 'created_at')
     search_fields = ('email_address__email', 'first_name', 'last_name')
+    actions = [
+        export_select_fields_csv_action("Esporta i selezionati in formato CSV",
+             fields=[
+                 ('first_name', 'Nome'),
+                 ('last_name', 'Cognome'),
+                 ('email_address', 'Email'),
+             ],
+             header=True
+        ),
+    ]
 
 
 admin.site.register(WebService, WebServiceAdmin)
