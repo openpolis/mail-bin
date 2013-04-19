@@ -62,7 +62,7 @@ class Subscription(models.Model):
         verbose_name_plural = 'Iscrizioni'
 
     def __unicode__(self):
-        return u"subscription for {0} to {1}".format(self.email_address, self.web_service)
+        return u"{0} a {1} - {2}".format(self.email_address, self.web_service, self.created_at)
 
 
 class WebService(models.Model):
