@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.http import HttpResponse
 from mail_bin.collector.models import WebService, EmailAddress, Subscription
-from mail_bin.utils import unicode_csv as csv
+import csv
+
 
 def export_select_fields_csv_action(description="Export selected objects as CSV file",
                                     fields=None, exclude=None, header=True):
@@ -40,13 +41,15 @@ def export_select_fields_csv_action(description="Export selected objects as CSV 
             field_names = [k for k, v in fields if k in field_names]
             labels = [v for k, v in fields if k in field_names]
 
-        response = HttpResponse(mimetype='text/plain')
+        response = HttpResponse(mimetype='text/plain; charset=utf8')
+
+
 
         # uncomment this if download is required
         #response = HttpResponse(mimetype='text/csv')
         #response['Content-Disposition'] = 'attachment; filename=%s.csv' % unicode(opts).replace('.', '_')
 
-        writer = csv.UnicodeWriter(response)
+        writer = csv.writer(response)
         if header:
             if labels:
                 writer.writerow(labels)
