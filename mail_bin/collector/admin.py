@@ -17,7 +17,8 @@ class EmailAdmin(admin.ModelAdmin):
 
 
 class SubscriptionAdmin(admin.ModelAdmin):
-    pass
+    list_filter = ('web_service__name', 'created_at')
+    search_fields = ('email_address__email', 'first_name', 'last_name')
 
 
 admin.site.register(WebService, WebServiceAdmin)
